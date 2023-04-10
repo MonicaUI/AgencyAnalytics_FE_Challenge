@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import './RecentlyAdded.css';
 import FavoriteDetails from './FavoriteDetails'
 
-interface User {
+type User = {
     id?: string;
     url?: string;
     sizeInBytes?: number;
@@ -19,7 +19,7 @@ interface User {
         height?: number,
         width?: number
     }
-    favorited?: boolean;
+    favorited?: any;
 }
 
 
@@ -27,10 +27,9 @@ interface Props {
     tab?: string;
 }
 const MockDetails = (props: { tab: string }) => {
-    const [posts, setPosts] = useState([]);
-    const [favouritePosts, setFavouritePosts] = useState([]);
+    const [posts, setPosts] = useState<User[] | []>([]);
+    const [favouritePosts, setFavouritePosts] = useState<User[] | []>([]);
     const [clickedImage, setClickedImage] = useState<User>({} as User);
-    console.log(posts)
 
     useEffect(() => {
         fetch('https://agencyanalytics-api.vercel.app/images.json')
@@ -40,7 +39,7 @@ const MockDetails = (props: { tab: string }) => {
                     return (new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
                 })
                 setPosts(data);
-                setFavouritePosts(data.map((fav: { favorited: boolean; }) => {
+                setFavouritePosts(data.map((fav: { favorited: any; }) => {
                     if (fav.favorited === true) {
                         return fav
                     } else return null
@@ -54,13 +53,31 @@ const MockDetails = (props: { tab: string }) => {
         return (size / Math.pow(1024, 2)).toFixed(1)
     }
 
-    const HandleClickImage = (event: React.MouseEvent<HTMLImageElement>) => {
+    const HandleClickImage = (event: string | undefined) => {
         posts.map(e => {
             if (event === e['id']) {
                 setClickedImage(e)
             }
         })
     };
+
+
+    const handleDelete = (id: any) => {
+        setPosts(posts.filter(each => each.id !== id))
+    }
+
+    const handleFavouite = (id: string, favorited: boolean) => {
+        const favoriteItem = [...posts.filter(each => each.id !== id), { ...posts.find(each => each.id === id), favorited }]
+        favoriteItem.sort(function (a, b) {
+            if (a.createdAt && b.createdAt) {
+                return (new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
+            } else {
+                return 0
+            }
+        })
+        setPosts(favoriteItem);
+        setClickedImage({ ...posts.find(each => each.id === id), favorited });
+    }
 
     return (
         <main className="Container">
@@ -69,9 +86,9 @@ const MockDetails = (props: { tab: string }) => {
                     (
                         posts.map(post => (
                             <main className="ItemContainer">
-                                <img onClick={() => HandleClickImage(post['id'])} src={post['url']} className="recent_image" alt="logo" />
+                                <img data-testid="recentlyAdded" onClick={() => HandleClickImage(post['id'])} src={post['url']} className="recent_image" alt="logo" />
                                 <p>{post['filename']}</p>
-                                <p>{sizeConvertion(post['sizeInBytes'])}  MB</p>
+                                <p>{sizeConvertion(post.sizeInBytes ?? 0)}  MB</p>
                             </main>
                         ))
                     ) :
@@ -81,7 +98,7 @@ const MockDetails = (props: { tab: string }) => {
                             (<main className="ItemContainer">
                                 <img onClick={() => HandleClickImage(post['id'])} src={post['url']} className="recent_image" alt="logo" />
                                 <p>{post['filename']}</p>
-                                <p>{sizeConvertion(post['sizeInBytes'])}  MB</p>
+                                <p>{sizeConvertion(post.sizeInBytes ?? 0)}  MB</p>
                             </main>) : null)
                         )
                         )
@@ -89,7 +106,9 @@ const MockDetails = (props: { tab: string }) => {
                 }
             </section>
             {props.tab === "recent" ?
-                (<FavoriteDetails image={clickedImage} post={posts} />) : null
+                (<FavoriteDetails image={clickedImage} post={posts}
+                    onDelete={handleDelete} onChange={handleFavouite}
+                />) : null
             }
         </main >
 
