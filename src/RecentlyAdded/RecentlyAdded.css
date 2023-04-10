@@ -181,3 +181,11 @@ aside>section {
     width: 220px;
     word-wrap: break-word;
 }
+
+.deleteButton {
+    width: 300px;
+    padding: 5px;
+    background-color: transparent;
+    border: 1px solid lightgrey;
+    cursor: pointer;
+}
