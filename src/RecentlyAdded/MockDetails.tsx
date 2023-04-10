@@ -28,9 +28,8 @@ interface Props {
 }
 const MockDetails = (props: { tab: string }) => {
     const [posts, setPosts] = useState<User[] | []>([]);
-    const [favouritePosts, setFavouritePosts] = useState([]);
+    const [favouritePosts, setFavouritePosts] = useState<User[] | []>([]);
     const [clickedImage, setClickedImage] = useState<User>({} as User);
-    console.log(posts)
 
     useEffect(() => {
         fetch('https://agencyanalytics-api.vercel.app/images.json')
@@ -68,17 +67,17 @@ const MockDetails = (props: { tab: string }) => {
     }
 
     const handleFavouite = (id: string, favorited: boolean) => {
-        const x = [...posts.filter(each => each.id !== id), { ...posts.find(each => each.id === id), favorited }]
-        x.sort(function (a, b) {
+        const favoriteItem = [...posts.filter(each => each.id !== id), { ...posts.find(each => each.id === id), favorited }]
+        favoriteItem.sort(function (a, b) {
             if (a.createdAt && b.createdAt) {
                 return (new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
             } else {
                 return 0
             }
         })
-        setPosts(x)
-        setClickedImage({ ...posts.find(each => each.id === id), favorited })
-
+        setPosts(favoriteItem);
+        setClickedImage({ ...posts.find(each => each.id === id), favorited });
+        setFavouritePosts(favoriteItem);
     }
 
     return (
@@ -100,7 +99,7 @@ const MockDetails = (props: { tab: string }) => {
                             (<main className="ItemContainer">
                                 <img onClick={() => HandleClickImage(post['id'])} src={post['url']} className="recent_image" alt="logo" />
                                 <p>{post['filename']}</p>
-                                <p>{sizeConvertion(post['sizeInBytes'])}  MB</p>
+                                <p>{sizeConvertion(post.sizeInBytes ?? 0)}  MB</p>
                             </main>) : null)
                         )
                         )
