@@ -77,7 +77,6 @@ const MockDetails = (props: { tab: string }) => {
         })
         setPosts(favoriteItem);
         setClickedImage({ ...posts.find(each => each.id === id), favorited });
-        setFavouritePosts(favoriteItem);
     }
 
     return (
